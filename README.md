@@ -12,5 +12,6 @@ python tweennow.py
 * Daemonize the program
 * Add GUI support using Tkinter 
 * Add documentation
+* Add command line options for the script
 
 **NOTE:** Works on Linux only. 
