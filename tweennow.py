@@ -35,6 +35,8 @@ class Tweennow:
     
     def call_api(self):
     
+        print "\n\n\n***** WELCOME TO TWEENNOW *****"
+        
         api = self.get_api()
     
         woeidDict = {}
@@ -53,25 +55,25 @@ class Tweennow:
         
         if woeidDict.has_key(location):
             woeidLocation = woeidDict[location]
+            trends1 = api.trends_place(woeidLocation)
+            
+            # from the end of your code
+            # trends1 is a list with only one element in it, which is a 
+            # dict which we'll put in data.
         else:
             logger.warning("Location WOEID not found!")
-        
-        
-        trends1 = api.trends_place(woeidLocation) # from the end of your code
-        # trends1 is a list with only one element in it, which is a 
-        # dict which we'll put in data.
+            print "\n\nLocation WOEID not found! Showing worldwide trends.."
+            trends1 = api.trends_place(1)
+            
         data = trends1[0] 
         # grab the trends
         trends = data['trends']
         # grab the name from each trend
         names = [trend['name'] for trend in trends]
         # put all the names together with a ' ' separating them
-        
-        
-        
+    
         #print woeidDict[]
         
-        print "\n\n\n***** WELCOME TO TWEENNOW *****"
         print "\n Fetching trending topics...\n"
         time.sleep(2)
         
@@ -90,12 +92,11 @@ class Tweennow:
         elif int(selection) == 0:
             query = raw_input("You have selected option 0. Please enter your topic: ")
             
-        print "\nShowing the tweets about",query,"on your desktop.\n\n"   
+        print "\nShowing the tweets about","\""+query+"\"","on your desktop.\n\n"   
         
         twitterStream = Stream(auth, Messenger())
         twitterStream.filter(track=[query])  #Track tweets with any hashtags/Word
-    
-        
+            
         
     def authenticate(self):
         
@@ -167,9 +168,7 @@ class Messenger(StreamListener):
         print status
 
 if __name__ == '__main__':
-    
-    
-    
+
     if version_info.major is 2:
         import pynotify
         notifyModule = "pynotify"
