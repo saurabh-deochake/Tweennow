@@ -13,6 +13,8 @@ import re
 import time
 import __future__
 import logging
+import tweepy
+
 
 
 
@@ -101,6 +103,8 @@ class Messenger(StreamListener):
 
 if __name__ == '__main__':
     
+    
+    
     if version_info.major is 2:
         import pynotify
         notifyModule = "pynotify"
@@ -136,5 +140,40 @@ if __name__ == '__main__':
     
     logger.info("User successfully authenticated.")
     
+    
+    
+    
+    api = tweepy.API(auth)
+    trends1 = api.trends_place(23424848) # from the end of your code
+    # trends1 is a list with only one element in it, which is a 
+    # dict which we'll put in data.
+    data = trends1[0] 
+    # grab the trends
+    trends = data['trends']
+    # grab the name from each trend
+    names = [trend['name'] for trend in trends]
+    # put all the names together with a ' ' separating them
+    
+    print "\n\n\n***** WELCOME TO TWEENNOW *****"
+    print "\n Fetching trending topics...\n"
+    time.sleep(2)
+    
+    trendsDict = {}
+    numbers = 1
+    for trend in names:
+        print str(numbers)+") "+trend
+        trendsDict[numbers] = trend
+        numbers = numbers +1
+    
+    #print trendsDict
+    selection = raw_input("\n\nEnter the number corrosponding to trends (Enter 0 to input your own topic):")    
+        
+    if int(selection) in range(1,11):
+        query = trendsDict[int(selection)]
+    elif int(selection) == 0:
+        query = raw_input("You have selected option 0. Please enter your topic: ")
+        
+    print "\nShowing the tweets about",query,"on your desktop.\n\n"   
+    
     twitterStream = Stream(auth, Messenger())
-    twitterStream.filter(track=["AAP"])  #Track tweets with any hashtags/Word
+    twitterStream.filter(track=[query])  #Track tweets with any hashtags/Word
