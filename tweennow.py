@@ -5,11 +5,15 @@ from tweepy import OAuthHandler
 from tweepy.streaming import StreamListener
 from sys import version_info
 from bs4 import BeautifulSoup
+from ConfigParser import SafeConfigParser
+from params import *
 import json
 import re
 import time
 import __future__
 import logging
+
+
 
 """
 Author: Saurabh Deochake (saurabh.d04@gmail.com)
@@ -20,11 +24,18 @@ own app
 
 """
 
-ckey = 'xxxxxxxxx'
-csecret = 'xxxxxx'
-atoken = 'xxxxxxx'
-asecret = 'xxxxxxxx'
-
+def authenticate():
+    print CONFIG_FILE
+    
+    parser = SafeConfigParser()
+    parser.read(CONFIG_FILE)
+    
+    ckey = parser.get('token','ckey')
+    csecret = parser.get('token','csecret')
+    atoken = parser.get('token','atoken')
+    asecret = parser.get('token','asecret')
+    
+    return ckey,csecret,atoken, asecret
 
 if version_info.major is 2:
     import pynotify
@@ -85,6 +96,7 @@ class listener(StreamListener):
     def on_error(self, status):
         print status
 
+ckey, csecret, atoken, asecret = authenticate()
 auth = OAuthHandler(ckey, csecret)
 
 print "Auth done"
