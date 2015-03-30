@@ -7,6 +7,7 @@ from sys import version_info
 from bs4 import BeautifulSoup
 from ConfigParser import SafeConfigParser
 from params import *
+import os
 import json
 import re
 import time
@@ -30,11 +31,16 @@ class Tweennow:
     
         
     def authenticate(self):
-        print CONFIG_FILE
         
         parser = SafeConfigParser()
-        parser.read(CONFIG_FILE)
-        
+        if not os.path.exists(CONFIG_FILE):
+            logger.error("Configuration file does not exist.")
+        elif not os.path.isfile(CONFIG_FILE):
+            logger.error("Configuration file is not a valid file.")
+        else:
+            parser.read(CONFIG_FILE)
+            
+        logger.info("Fetching authentication data")
         ckey = parser.get('token','ckey')
         csecret = parser.get('token','csecret')
         atoken = parser.get('token','atoken')
@@ -48,19 +54,19 @@ class Messenger(StreamListener):
     #using pynotify module to send messages on desktop        
     def popUpMessage(self,message):
         if notifyModule is "pynotify":
-            logging.debug("Initializing pynotify")
+            logger.debug("Initializing pynotify")
             pynotify.init("Tweennow")
-            logging.debug("Sending notification: message:{}".format(message))
+            logger.debug("Sending notification: message:{}".format(message))
             pynotify.Notification(message).show()
         elif notifyModule is "Notify":
-            logging.debug("Initializing Notify")
+            logger.debug("Initializing Notify")
             Notify.init("Tweennow")
-            logging.debug("Sending notification: message:{}".format(message))
+            logger.debug("Sending notification: message:{}".format(message))
             Notify.Notification.new(message).show()
         else:
-            logging.debug("Initializing notify2")
+            logger.debug("Initializing notify2")
             notify2.init("Tweennow")
-            logging.debug("Sending notification: message:{}".format(message))
+            logger.debug("Sending notification: message:{}".format(message))
             notify2.Notification(message).show()
         
 
@@ -71,24 +77,24 @@ class Messenger(StreamListener):
             userName = data.split(',"screen_name":"')[1].split('","location')[0]
             #Take out actual tweet
             tweet = data.split(',"text":"')[1].split('","source')[0]
-            
+            logger.debug("Fetching Tweets")
             #Create message in format: @username: <text>
             fetchedTweet = "@"+userName+"-"+tweet
             
             #Call popUpMessage() to send your message to desktop
-            
+            logger.debug("Sending Tweets")
             self.popUpMessage(fetchedTweet)
             time.sleep(7)
             return True
         
         except BaseException, e:
             print 'Failed Ondata,', str(e)
+            logger.error(str(e))
             time.sleep(5)
-        except KeyboardInterrupt:
-            if didInterrupt:
-                logging.info("keyboard interrupted, once")
-                print("Bye bye")
-                quit()
+        except KeyboardInterrupt, k:
+            print 'Keyboard Interrupt Occured,',str(k)
+            logger.error(str(k))
+            quit()
 
     def on_error(self, status):
         print status
@@ -106,14 +112,29 @@ if __name__ == '__main__':
             import notify2
             notifyModule = "notify2"
 
+    # Setting the logger
     
+    logger = logging.getLogger('tweennow')
+    parser = SafeConfigParser()
+    parser.read(CONFIG_FILE)
+    logFile = parser.get('logging','log_file')
+    
+    hdlr = logging.FileHandler(logFile)
+    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    hdlr.setFormatter(formatter)
+    logger.addHandler(hdlr) 
+    logger.setLevel(logging.DEBUG)
+
+    #Creating an object of Tweennow
+    logger.info("Creating an instance of Tweennow")
     tObj = Tweennow()
     
+    logger.info("Authenticating the user's credentials")
     ckey, csecret, atoken, asecret = tObj.authenticate()
     auth = OAuthHandler(ckey, csecret)
-    
-    print "Auth done"
     auth.set_access_token(atoken, asecret)
-    print "access done"
+    
+    logger.info("User successfully authenticated.")
+    
     twitterStream = Stream(auth, Messenger())
     twitterStream.filter(track=["AAP"])  #Track tweets with any hashtags/Word
