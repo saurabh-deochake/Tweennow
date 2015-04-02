@@ -8,8 +8,6 @@ from bs4 import BeautifulSoup
 from ConfigParser import SafeConfigParser
 from params import *
 import os
-import json
-import re
 import time
 import __future__
 import logging
@@ -63,6 +61,7 @@ class Tweennow:
         else:
             logger.warning("Location WOEID not found!")
             print "\n\nLocation WOEID not found! Showing worldwide trends.."
+            location = "worldwide"
             trends1 = api.trends_place(1)
             
         data = trends1[0] 
@@ -74,8 +73,9 @@ class Tweennow:
     
         #print woeidDict[]
         
-        print "\n Fetching trending topics...\n"
-        time.sleep(2)
+        print "\n >> Fetching trending topics for \""+location+"\"...  ",
+        time.sleep(3)
+        print "[DONE]\n\n"
         
         trendsDict = {}
         numbers = 1
@@ -86,13 +86,20 @@ class Tweennow:
         
         #print trendsDict
         selection = raw_input("\n\nEnter the number corrosponding to trends (Enter 0 to input your own topic):")    
+        
+        while True:    
+            if int(selection) in range(1,11):
+                query = trendsDict[int(selection)]
+                break
+            elif int(selection) == 0:
+                query = raw_input("You have selected option 0. Please enter your topic: ")
+                break
+            else:
+                print "\n >> Error!Invalid option selected!"
+                time.sleep(2)
+                selection = raw_input("\n\nEnter the number corrosponding to trends (Enter 0 to input your own topic):")    
             
-        if int(selection) in range(1,11):
-            query = trendsDict[int(selection)]
-        elif int(selection) == 0:
-            query = raw_input("You have selected option 0. Please enter your topic: ")
-            
-        print "\nShowing the tweets about","\""+query+"\"","on your desktop.\n\n"   
+        print "\n >> Showing the tweets about","\""+query+"\"","on your desktop.\n\n"   
         
         twitterStream = Stream(auth, Messenger())
         twitterStream.filter(track=[query])  #Track tweets with any hashtags/Word
@@ -120,22 +127,22 @@ class Tweennow:
 class Messenger(StreamListener):
     
     #using pynotify module to send messages on desktop        
-    def popUpMessage(self,message):
+    def popUpMessage(self, message):
         if notifyModule is "pynotify":
             logger.debug("Initializing pynotify")
             pynotify.init("Tweennow")
             logger.debug("Sending notification: message:{}".format(message))
-            pynotify.Notification(message).show()
+            pynotify.Notification("Tweennow- Live Tweets",message).show()
         elif notifyModule is "Notify":
             logger.debug("Initializing Notify")
             Notify.init("Tweennow")
             logger.debug("Sending notification: message:{}".format(message))
-            Notify.Notification.new(message).show()
+            Notify.Notification.new("Tweennow- Live Tweets",message).show()
         else:
             logger.debug("Initializing notify2")
             notify2.init("Tweennow")
             logger.debug("Sending notification: message:{}".format(message))
-            notify2.Notification(message).show()
+            notify2.Notification("Tweennow- Live Tweets",message).show()
         
 
     def on_data(self, data):
@@ -152,7 +159,7 @@ class Messenger(StreamListener):
             #Call popUpMessage() to send your message to desktop
             logger.debug("Sending Tweets")
             self.popUpMessage(fetchedTweet)
-            time.sleep(7)
+            time.sleep(5)
             return True
         
         except BaseException, e:
