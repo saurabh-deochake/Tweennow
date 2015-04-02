@@ -6,6 +6,7 @@ from tweepy.streaming import StreamListener
 from sys import version_info
 from bs4 import BeautifulSoup
 from ConfigParser import SafeConfigParser
+from optparse import OptionParser
 from params import *
 import os
 import time
@@ -185,8 +186,9 @@ if __name__ == '__main__':
             notifyModule = "Notify"
         except ImportError:
             import notify2
-            notifyModule = "notify2"
-
+            notifyModule = "notify2"   
+    
+    
     # Setting the logger
     
     logger = logging.getLogger('tweennow')
@@ -200,6 +202,21 @@ if __name__ == '__main__':
     logger.addHandler(hdlr) 
     logger.setLevel(logging.DEBUG)
 
+
+    #setting optparser
+    
+    optParser = OptionParser()
+    optParser.add_option("-l","--location", type="string", help="List of directory",
+                  dest="location")
+    
+    options, arguments = optParser.parse_args()
+    if options.location:
+        parser.set('geo','location',options.location)
+        with open(CONFIG_FILE, 'wb') as configfile:
+            parser.write(configfile)
+
+
+
     #Creating an object of Tweennow
     logger.info("Creating an instance of Tweennow")
     tObj = Tweennow()
@@ -211,6 +228,13 @@ if __name__ == '__main__':
     
     logger.info("User successfully authenticated.")
     
+    
+    
+    
+    
     tObj.call_api()
+    
+    
+    
     
     
