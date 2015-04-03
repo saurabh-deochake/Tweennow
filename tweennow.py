@@ -104,6 +104,7 @@ class Tweennow:
             
         else:
             query = topic
+            logger.info("Command line option provided. Bypassing the selection...")
         
         print "\n >> Showing the tweets about","\""+query+"\"","on your desktop.\n\n"   
         
