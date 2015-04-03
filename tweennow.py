@@ -32,7 +32,7 @@ class Tweennow:
     def get_api(self):
         return tweepy.API(auth)
     
-    def call_api(self):
+    def call_api(self, topic):
     
         print "\n\n\n***** WELCOME TO TWEENNOW *****"
         
@@ -65,41 +65,46 @@ class Tweennow:
             location = "worldwide"
             trends1 = api.trends_place(1)
             
-        data = trends1[0] 
-        # grab the trends
-        trends = data['trends']
-        # grab the name from each trend
-        names = [trend['name'] for trend in trends]
-        # put all the names together with a ' ' separating them
-    
-        #print woeidDict[]
+        if not topic:
+            data = trends1[0] 
+            # grab the trends
+            trends = data['trends']
+            # grab the name from each trend
+            names = [trend['name'] for trend in trends]
+            # put all the names together with a ' ' separating them
         
-        print "\n >> Fetching trending topics for \""+location+"\"...  ",
-        time.sleep(3)
-        print "[DONE]\n\n"
-        
-        trendsDict = {}
-        numbers = 1
-        for trend in names:
-            print str(numbers)+") "+trend
-            trendsDict[numbers] = trend
-            numbers = numbers +1
-        
-        #print trendsDict
-        selection = raw_input("\n\nEnter the number corrosponding to trends (Enter 0 to input your own topic):")    
-        
-        while True:    
-            if int(selection) in range(1,11):
-                query = trendsDict[int(selection)]
-                break
-            elif int(selection) == 0:
-                query = raw_input("You have selected option 0. Please enter your topic: ")
-                break
-            else:
-                print "\n >> Error!Invalid option selected!"
-                time.sleep(2)
-                selection = raw_input("\n\nEnter the number corrosponding to trends (Enter 0 to input your own topic):")    
+            #print woeidDict[]
             
+            print "\n >> Fetching trending topics for \""+location+"\"...  ",
+            time.sleep(3)
+            print "[DONE]\n\n"
+            
+            trendsDict = {}
+            numbers = 1
+            for trend in names:
+                print str(numbers)+") "+trend
+                trendsDict[numbers] = trend
+                numbers = numbers +1
+            
+            #print trendsDict
+            selection = raw_input("\n\nEnter the number corrosponding to trends (Enter 0 to input your own topic):")    
+        
+            
+            while True:    
+                if int(selection) in range(1,11):
+                    query = trendsDict[int(selection)]
+                    break
+                elif int(selection) == 0:
+                    query = raw_input("You have selected option 0. Please enter your topic: ")
+                    break
+                else:
+                    print "\n >> Error!Invalid option selected!"
+                    time.sleep(2)
+                    selection = raw_input("\n\nEnter the number corrosponding to trends (Enter 0 to input your own topic):")    
+            
+        else:
+            query = topic
+        
         print "\n >> Showing the tweets about","\""+query+"\"","on your desktop.\n\n"   
         
         twitterStream = Stream(auth, Messenger())
@@ -203,20 +208,6 @@ if __name__ == '__main__':
     logger.setLevel(logging.DEBUG)
 
 
-    #setting optparser
-    
-    optParser = OptionParser()
-    optParser.add_option("-l","--location", type="string", help="List of directory",
-                  dest="location")
-    
-    options, arguments = optParser.parse_args()
-    if options.location:
-        parser.set('geo','location',options.location)
-        with open(CONFIG_FILE, 'wb') as configfile:
-            parser.write(configfile)
-
-
-
     #Creating an object of Tweennow
     logger.info("Creating an instance of Tweennow")
     tObj = Tweennow()
@@ -228,13 +219,19 @@ if __name__ == '__main__':
     
     logger.info("User successfully authenticated.")
     
+    #setting optparser
     
-    
-    
-    
-    tObj.call_api()
-    
-    
-    
-    
-    
+    optParser = OptionParser()
+    optParser.add_option("-l","--location", type="string", help="Set the location to get trending topics",
+                    dest="location")
+    optParser.add_option("-t","--topic", type="string", help="Topic to get tweets about",
+                    dest="topic")
+    options, arguments = optParser.parse_args()
+    if options.location:
+        parser.set('geo','location',options.location)
+        with open(CONFIG_FILE, 'wb') as configfile:
+            parser.write(configfile)
+    if options.topic:
+        tObj.call_api(options.topic)
+    else:
+        tObj.call_api(None)
